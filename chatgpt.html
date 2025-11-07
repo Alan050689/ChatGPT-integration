@@ -18,7 +18,7 @@
     <button onclick="send()">Enviar</button>
 
     <script>
-      const OPENAI_API_KEY = "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"; // 👈 pegá tu API key
+      const apiUrl = "https://chatproxy-alan.alan-rosenfeld.workers.dev"; // tu Worker Cloudflare
 
       async function send() {
         const input = document.getElementById("msg");
@@ -34,17 +34,23 @@
         chat.scrollTop = chat.scrollHeight;
 
         try {
-          const response = await fetch("https://chatproxy-alan.alan-rosenfeld.workers.dev", {
+          const response = await fetch(apiUrl, {
             method: "POST",
             headers: {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer " + OPENAI_API_KEY
+              "Content-Type": "application/json"
             },
             body: JSON.stringify({
               model: "gpt-4o-mini",
-              messages: [{ role: "user", content: userMessage }]
+              messages: [
+                { role: "system", content: "Sos un asistente que responde en español y de forma clara." },
+                { role: "user", content: userMessage }
+              ]
             })
           });
+
+          if (!response.ok) {
+            throw new Error(`Error HTTP ${response.status}`);
+          }
 
           const data = await response.json();
           const answer = data.choices?.[0]?.message?.content || "No se recibió respuesta.";
